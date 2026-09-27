@@ -4,15 +4,15 @@ import plotly.express as px
 import plotly.graph_objects as go
 from pathlib import Path
 
-# --- PAGE CONFIGURATION ---
+# --- PAGE SETUP ---
 st.set_page_config(
     page_title="Netflix Content Analytics",
     page_icon="🎬",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
-# --- ADVANCED NETFLIX THEME STYLING ---
+# --- MODERN STREAMING UI CSS ---
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
@@ -21,35 +21,51 @@ st.markdown("""
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    /* Overall Background */
     .stApp {
-        background: radial-gradient(circle at 10% 20%, rgba(229, 9, 20, 0.08) 0%, rgba(14, 14, 16, 1) 40%),
-                    radial-gradient(circle at 90% 85%, rgba(178, 7, 16, 0.06) 0%, rgba(14, 14, 16, 1) 45%);
         background-color: #0E0E10;
+        background-image: 
+            radial-gradient(circle at 12% 15%, rgba(229, 9, 20, 0.12) 0%, transparent 40%),
+            radial-gradient(circle at 88% 85%, rgba(178, 7, 16, 0.08) 0%, transparent 40%);
         color: #F3F4F6;
     }
 
-    /* Clean Sidebar Styling */
-    section[data-testid="stSidebar"] {
-        background-color: #121214 !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
+    header[data-testid="stHeader"] {
+        background: transparent !important;
     }
 
-    /* Header & Branding */
-    .brand-container {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding-bottom: 8px;
+    /* Top Filter Container */
+    .filter-container {
+        background: rgba(20, 20, 24, 0.85);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 14px;
+        padding: 16px 20px 8px 20px;
         margin-bottom: 24px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
+
+    /* Fix Dropdown Popovers */
+    div[data-baseweb="popover"], div[data-baseweb="menu"] {
+        background-color: #1A1A1E !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        border-radius: 8px !important;
+        z-index: 999999 !important;
+    }
+    div[data-baseweb="select"] > div {
+        background-color: #141416 !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
+        color: #FFFFFF !important;
+        border-radius: 8px !important;
+    }
+
+    /* Header Styling */
     .brand-title {
-        font-size: 2.1rem;
+        font-size: 2.2rem;
         font-weight: 800;
         letter-spacing: -0.5px;
         color: #FFFFFF;
         margin: 0;
+        line-height: 1.1;
     }
     .brand-title span {
         color: #E50914;
@@ -58,7 +74,7 @@ st.markdown("""
         color: #9CA3AF;
         font-size: 0.95rem;
         margin-top: 4px;
-        margin-bottom: 0px;
+        margin-bottom: 20px;
     }
 
     /* Metric Cards */
@@ -68,77 +84,54 @@ st.markdown("""
         -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
-        padding: 20px;
+        padding: 18px 20px;
         position: relative;
         overflow: hidden;
-        transition: transform 0.2s ease, border-color 0.2s ease;
-    }
-    .metric-card:hover {
-        transform: translateY(-2px);
-        border-color: rgba(229, 9, 20, 0.4);
-    }
-    .metric-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: linear-gradient(90deg, #E50914, transparent);
+        border-left: 3px solid #E50914;
     }
     .metric-header {
-        font-size: 0.75rem;
+        font-size: 0.72rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.8px;
         color: #9CA3AF;
     }
     .metric-value {
-        font-size: 2.1rem;
+        font-size: 2rem;
         font-weight: 800;
         color: #FFFFFF;
-        margin-top: 8px;
+        margin-top: 6px;
         line-height: 1;
     }
     .metric-badge {
         display: inline-block;
-        font-size: 0.75rem;
-        padding: 2px 8px;
+        font-size: 0.72rem;
+        padding: 2px 7px;
         border-radius: 9999px;
         background-color: rgba(229, 9, 20, 0.15);
         color: #FF5A5F;
         font-weight: 600;
-        margin-top: 10px;
+        margin-top: 8px;
     }
 
     /* Chart Containers */
     .chart-box {
-        background: rgba(22, 22, 26, 0.65);
-        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: rgba(20, 20, 24, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.07);
         border-radius: 14px;
-        padding: 18px 20px 10px 20px;
+        padding: 18px 20px 12px 20px;
         margin-bottom: 20px;
     }
     .chart-title {
         font-size: 1.05rem;
         font-weight: 700;
         color: #FFFFFF;
-        margin-bottom: 4px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+        margin-bottom: 2px;
     }
     .chart-subtitle {
         font-size: 0.8rem;
         color: #6B7280;
         margin-bottom: 12px;
-    }
-
-    /* Streamlit Widget Polish */
-    .stSelectbox label, .stSlider label {
-        font-size: 0.85rem !important;
-        font-weight: 600 !important;
-        color: #D1D5DB !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -156,27 +149,42 @@ def load_datasets():
 
 titles, genres, countries = load_datasets()
 
-# --- SIDEBAR INTERFACE ---
-with st.sidebar:
-    st.markdown("### 🎛️ Catalog Controls")
+# --- TOP BANNER ---
+st.markdown("""
+    <div>
+        <h1 class="brand-title">NETFLIX <span>INSIGHTS</span></h1>
+        <p class="brand-subtitle">Global Streaming Intelligence & Content Production Architecture</p>
+    </div>
+""", unsafe_allow_html=True)
 
-    content_type_options = ["All Types"] + sorted(titles["type"].dropna().unique().tolist())
-    selected_type = st.selectbox("Content Segment", content_type_options)
+# --- MODERN HORIZONTAL FILTER RIBBON ---
+with st.container():
+    st.markdown('<div class="filter-container">', unsafe_allow_html=True)
+    f1, f2, f3, f4 = st.columns([1.2, 1.6, 1.6, 1.2])
 
-    min_yr = int(titles["release_year"].min())
-    max_yr = int(titles["release_year"].max())
-    selected_years = st.slider(
-        "Release Horizon",
-        min_value=min_yr,
-        max_value=max_yr,
-        value=(2008, max_yr)
-    )
+    with f1:
+        content_type_options = ["All Types"] + sorted(titles["type"].dropna().unique().tolist())
+        selected_type = st.selectbox("Content Segment", content_type_options)
 
-    all_genres = ["All Genres"] + sorted(genres["genre"].dropna().unique().tolist())
-    selected_genre = st.selectbox("Genre Category", all_genres)
+    with f2:
+        min_yr = int(titles["release_year"].min())
+        max_yr = int(titles["release_year"].max())
+        selected_years = st.slider(
+            "Release Horizon",
+            min_value=min_yr,
+            max_value=max_yr,
+            value=(2008, max_yr)
+        )
 
-    all_ratings = ["All Ratings"] + sorted(titles["rating"].dropna().unique().tolist())
-    selected_rating = st.selectbox("Maturity Rating", all_ratings)
+    with f3:
+        all_genres = ["All Genres"] + sorted(genres["genre"].dropna().unique().tolist())
+        selected_genre = st.selectbox("Genre Category", all_genres)
+
+    with f4:
+        all_ratings = ["All Ratings"] + sorted(titles["rating"].dropna().unique().tolist())
+        selected_rating = st.selectbox("Maturity Rating", all_ratings)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # --- FILTERING LOGIC ---
 filtered = titles[
@@ -188,22 +196,11 @@ if selected_type != "All Types":
     filtered = filtered[filtered["type"] == selected_type]
 
 if selected_genre != "All Genres":
-    matching_show_ids = genres[genres["genre"] == selected_genre]["show_id"]
-    filtered = filtered[filtered["show_id"].isin(matching_show_ids)]
+    matching_ids = genres[genres["genre"] == selected_genre]["show_id"]
+    filtered = filtered[filtered["show_id"].isin(matching_ids)]
 
 if selected_rating != "All Ratings":
     filtered = filtered[filtered["rating"] == selected_rating]
-
-
-# --- TOP BANNER ---
-st.markdown("""
-<div class="brand-container">
-    <div>
-        <h1 class="brand-title">NETFLIX <span>INSIGHTS</span></h1>
-        <p class="brand-subtitle">Global Streaming Intelligence & Content Production Architecture</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
 
 # --- KEY PERFORMANCE INDICATORS ---
 total_count = len(filtered)
@@ -216,9 +213,9 @@ avg_duration = round(movie_subset["duration_value"].mean(), 1) if not movie_subs
 movie_pct = round((movies_count / total_count * 100), 1) if total_count > 0 else 0
 show_pct = round((shows_count / total_count * 100), 1) if total_count > 0 else 0
 
-kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+k1, k2, k3, k4 = st.columns(4)
 
-with kpi1:
+with k1:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-header">Total Titles Filtered</div>
@@ -227,7 +224,7 @@ with kpi1:
     </div>
     """, unsafe_allow_html=True)
 
-with kpi2:
+with k2:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-header">Feature Films</div>
@@ -236,7 +233,7 @@ with kpi2:
     </div>
     """, unsafe_allow_html=True)
 
-with kpi3:
+with k3:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-header">Television Series</div>
@@ -245,7 +242,7 @@ with kpi3:
     </div>
     """, unsafe_allow_html=True)
 
-with kpi4:
+with k4:
     st.markdown(f"""
     <div class="metric-card">
         <div class="metric-header">Avg Film Duration</div>
@@ -254,7 +251,6 @@ with kpi4:
     </div>
     """, unsafe_allow_html=True)
 
-st.write("")
 st.write("")
 
 # --- ROW 1: CONTENT ARCHITECTURE & TIME INTELLIGENCE ---
@@ -270,21 +266,27 @@ with c1:
     type_counts = filtered["type"].value_counts().reset_index()
     type_counts.columns = ["Type", "Count"]
 
-    fig_donut = go.Figure(data=[go.Pie(
-        labels=type_counts["Type"],
-        values=type_counts["Count"],
-        hole=0.62,
-        marker=dict(colors=["#E50914", "#2B2B30"], line=dict(color="#141416", width=2)),
-        textinfo="label+percent",
-        textfont=dict(color="#FFFFFF", size=12),
-        hoverinfo="label+value+percent",
-    )])
+    fig_donut = px.pie(
+        type_counts,
+        names="Type",
+        values="Count",
+        hole=0.6,
+        color="Type",
+        color_discrete_map={"Movie": "#E50914", "TV Show": "#333338"}
+    )
+    fig_donut.update_traces(
+        textposition="inside",
+        textinfo="percent",
+        insidetextfont=dict(size=14, color="#FFFFFF"),
+        marker=dict(line=dict(color="#141416", width=2))
+    )
     fig_donut.update_layout(
-        showlegend=False,
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.15, xanchor="center", x=0.5, font=dict(color="#FFFFFF")),
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        height=320,
-        margin=dict(t=10, b=10, l=10, r=10),
+        height=330,
+        margin=dict(t=20, b=30, l=15, r=15)
     )
     st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
     st.markdown("</div>", unsafe_allow_html=True)
@@ -293,7 +295,7 @@ with c2:
     st.markdown("""
     <div class="chart-box">
         <div class="chart-title">Release Timeline & Volume Growth</div>
-        <div class="chart-subtitle">Annual releases indexed by historical original air date</div>
+        <div class="chart-subtitle">Annual catalog additions categorized by content format</div>
     """, unsafe_allow_html=True)
 
     yearly = filtered.groupby(["release_year", "type"])["show_id"].count().reset_index()
@@ -311,8 +313,8 @@ with c2:
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#9CA3AF"),
-        height=320,
-        margin=dict(t=10, b=10, l=10, r=10),
+        height=330,
+        margin=dict(t=15, b=20, l=15, r=15),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(color="#FFFFFF")),
         xaxis=dict(showgrid=False, linecolor="rgba(255,255,255,0.1)"),
         yaxis=dict(gridcolor="rgba(255,255,255,0.06)", linecolor="rgba(255,255,255,0.1)")
@@ -327,7 +329,7 @@ with c3:
     st.markdown("""
     <div class="chart-box">
         <div class="chart-title">Top 10 Catalog Genres</div>
-        <div class="chart-subtitle">Category saturation across selected filter parameters</div>
+        <div class="chart-subtitle">Category density across active filter scope</div>
     """, unsafe_allow_html=True)
 
     filtered_genres = genres[genres["show_id"].isin(filtered["show_id"])]
@@ -345,12 +347,11 @@ with c3:
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#9CA3AF"),
-        height=350,
+        height=360,
         margin=dict(t=10, b=10, l=10, r=10),
         xaxis=dict(gridcolor="rgba(255,255,255,0.06)", linecolor="rgba(255,255,255,0.1)"),
         yaxis=dict(showgrid=False, linecolor="rgba(255,255,255,0.1)")
     )
-    fig_genre.update_traces(marker=dict(line=dict(width=0)))
     st.plotly_chart(fig_genre, use_container_width=True, config={"displayModeBar": False})
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -358,7 +359,7 @@ with c4:
     st.markdown("""
     <div class="chart-box">
         <div class="chart-title">Top 10 Production Territories</div>
-        <div class="chart-subtitle">Leading origin countries by overall release footprint</div>
+        <div class="chart-subtitle">Origin countries by release volume</div>
     """, unsafe_allow_html=True)
 
     filtered_countries = countries[countries["show_id"].isin(filtered["show_id"])]
@@ -375,7 +376,7 @@ with c4:
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
         font=dict(color="#9CA3AF"),
-        height=350,
+        height=360,
         margin=dict(t=10, b=10, l=10, r=10),
         xaxis=dict(showgrid=False, linecolor="rgba(255,255,255,0.1)"),
         yaxis=dict(gridcolor="rgba(255,255,255,0.06)", linecolor="rgba(255,255,255,0.1)")
@@ -383,14 +384,14 @@ with c4:
     st.plotly_chart(fig_geo, use_container_width=True, config={"displayModeBar": False})
     st.markdown("</div>", unsafe_allow_html=True)
 
-# --- SEARCH & EXPLORATION TABLE ---
+# --- CATALOG SEARCH SECTION ---
 st.markdown("""
 <div class="chart-box">
     <div class="chart-title">Catalog Explorer & Deep Search</div>
     <div class="chart-subtitle">Search specific titles, actors, or directors in the active filter selection</div>
 """, unsafe_allow_html=True)
 
-search_term = st.text_input("Search catalog", placeholder="Search by title, director, cast...")
+search_term = st.text_input("Search catalog", placeholder="Search by title, director, cast...", label_visibility="collapsed")
 
 table_view = filtered[["title", "type", "release_year", "rating", "duration", "director", "country"]].copy()
 
